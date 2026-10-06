@@ -1,0 +1,210 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define BUFFER_SIZE 100
+
+/* Check whether the given string is a C keyword */
+int isKeyword(char str[])
+{
+    char keywords[][10] = {
+        "int", "float", "char", "double", "long", "short",
+        "if", "else", "while", "for", "do", "switch", "case",
+        "return", "void", "break", "continue", "const",
+        "static", "struct", "typedef", "sizeof", "unsigned",
+        "signed", "goto", "default"
+    };
+
+    int n = sizeof(keywords) / sizeof(keywords[0]);
+
+    for (int i = 0; i < n; i++)
+    {
+        if (strcmp(str, keywords[i]) == 0)
+            return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    FILE *fp;
+    int ch, next;                 /* MUST be int, not char (for EOF) */
+    char buffer[BUFFER_SIZE];
+    int i;
+
+    fp = fopen("input.c", "r");
+
+    if (fp == NULL)
+    {
+        printf("Unable to open file.\n");
+        return 1;
+    }
+
+    printf("TOKENS:\n\n");
+
+    while ((ch = fgetc(fp)) != EOF)
+    {
+        /* ---------- 1. Ignore spaces, tabs, newlines ---------- */
+        if (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+            continue;
+
+        /* ---------- 2. Ignore comments ---------- */
+        if (ch == '/')
+        {
+            next = fgetc(fp);
+
+            /* Single-line comment: // ... */
+            if (next == '/')
+            {
+                while ((ch = fgetc(fp)) != EOF && ch != '\n')
+                    ;
+                continue;
+            }
+
+            /* Multi-line comment: /* ... */
+            if (next == '*')
+            {
+                int prev = 0;
+                while ((ch = fgetc(fp)) != EOF)
+                {
+                    if (prev == '*' && ch == '/')
+                        break;
+                    prev = ch;
+                }
+                continue;
+            }
+
+            /* Just a division operator */
+            if (next != EOF)
+                ungetc(next, fp);
+            printf("Operator: /\n");
+            continue;
+        }
+
+        /* ---------- 3. Identifier or keyword ---------- */
+        if (isalpha(ch) || ch == '_')
+        {
+            i = 0;
+            buffer[i++] = (char)ch;
+
+            while ((ch = fgetc(fp)) != EOF &&
+                   (isalnum(ch) || ch == '_'))
+            {
+                if (i < BUFFER_SIZE - 1)   /* prevent overflow */
+                    buffer[i++] = (char)ch;
+            }
+
+            buffer[i] = '\0';
+
+            if (ch != EOF)
+                ungetc(ch, fp);
+
+            if (isKeyword(buffer))
+                printf("Keyword: %s\n", buffer);
+            else
+                printf("Identifier: %s\n", buffer);
+
+            continue;
+        }
+
+        /* ---------- 4. Constant (integer or float) ---------- */
+        if (isdigit(ch))
+        {
+            int isFloat = 0;
+            i = 0;
+            buffer[i++] = (char)ch;
+
+            while ((ch = fgetc(fp)) != EOF)
+            {
+                if (isdigit(ch))
+                {
+                    if (i < BUFFER_SIZE - 1)
+                        buffer[i++] = (char)ch;
+                }
+                else if (ch == '.' && !isFloat)
+                {
+                    isFloat = 1;
+                    if (i < BUFFER_SIZE - 1)
+                        buffer[i++] = (char)ch;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            buffer[i] = '\0';
+
+            if (ch != EOF)
+                ungetc(ch, fp);
+
+            printf("Constant: %s\n", buffer);
+            continue;
+        }
+
+        /* ---------- 5. String / character literal ---------- */
+        if (ch == '"' || ch == '\'')
+        {
+            int quote = ch;
+            while ((ch = fgetc(fp)) != EOF && ch != quote)
+            {
+                if (ch == '\\')          /* skip escaped char */
+                    fgetc(fp);
+            }
+            printf("Literal: (string/char literal)\n");
+            continue;
+        }
+
+        /* ---------- 6. Operators ---------- */
+        if (ch == '+' || ch == '-' || ch == '*' ||
+            ch == '/' || ch == '%' || ch == '=' ||
+            ch == '<' || ch == '>' || ch == '!' ||
+            ch == '&' || ch == '|' || ch == '^' || ch == '~')
+        {
+            next = fgetc(fp);
+
+            if ((ch == '+' && next == '+') ||
+                (ch == '-' && next == '-') ||
+                (ch == '=' && next == '=') ||
+                (ch == '!' && next == '=') ||
+                (ch == '<' && next == '=') ||
+                (ch == '>' && next == '=') ||
+                (ch == '&' && next == '&') ||
+                (ch == '|' && next == '|') ||
+                (ch == '+' && next == '=') ||
+                (ch == '-' && next == '=') ||
+                (ch == '*' && next == '=') ||
+                (ch == '/' && next == '=') ||
+                (ch == '%' && next == '=') ||
+                (ch == '<' && next == '<') ||
+                (ch == '>' && next == '>'))
+            {
+                printf("Operator: %c%c\n", ch, next);
+            }
+            else
+            {
+                printf("Operator: %c\n", ch);
+                if (next != EOF)
+                    ungetc(next, fp);
+            }
+            continue;
+        }
+
+        /* ---------- 7. Special symbols ---------- */
+        if (ch == '(' || ch == ')' ||
+            ch == '{' || ch == '}' ||
+            ch == '[' || ch == ']' ||
+            ch == ';' || ch == ',' ||
+            ch == '.' || ch == ':')
+        {
+            printf("Special Symbol: %c\n", ch);
+            continue;
+        }
+
+        /* ---------- 8. Unknown character ---------- */
+        printf("Unknown: %c\n", (char)ch);
+    }
+
+    fclose(fp);
+    return 0;
+}
