@@ -1,0 +1,126 @@
+#include <stdio.h>
+#include <ctype.h>
+#include <string.h>
+
+#define MAX 30
+
+int isOperator(char ch)
+{
+    return ch == '+' || ch == '-' || ch == '*' || ch == '/' ||
+           ch == '%' || ch == '=' || ch == '<' || ch == '>' ||
+           ch == '!' || ch == '&' || ch == '|';
+}
+
+int main()
+{
+    char input[1000];
+    int i = 0;
+
+    printf("Enter the C program/code:\n");
+    fgets(input, sizeof(input), stdin);
+
+    printf("\nTokens:\n");
+
+    while (input[i] != '\0')
+    {
+        /* Ignore spaces, tabs and new lines */
+        if (isspace(input[i]))
+        {
+            i++;
+            continue;
+        }
+
+        /* Ignore single-line comments */
+        if (input[i] == '/' && input[i + 1] == '/')
+        {
+            break;
+        }
+
+        /* Ignore multi-line comments */
+        if (input[i] == '/' && input[i + 1] == '*')
+        {
+            i += 2;
+
+            while (input[i] != '\0' &&
+                   !(input[i] == '*' && input[i + 1] == '/'))
+            {
+                i++;
+            }
+
+            if (input[i] != '\0')
+                i += 2;
+
+            continue;
+        }
+
+        /* Identify identifiers */
+        if (isalpha(input[i]) || input[i] == '_')
+        {
+            char identifier[MAX + 1];
+            int j = 0;
+
+            while (isalnum(input[i]) || input[i] == '_')
+            {
+                if (j < MAX)
+                    identifier[j++] = input[i];
+
+                i++;
+            }
+
+            identifier[j] = '\0';
+
+            printf("IDENTIFIER\t%s\n", identifier);
+        }
+
+        /* Identify constants */
+        else if (isdigit(input[i]))
+        {
+            char constant[50];
+            int j = 0;
+
+            while (isdigit(input[i]) || input[i] == '.')
+            {
+                constant[j++] = input[i++];
+            }
+
+            constant[j] = '\0';
+
+            printf("CONSTANT\t%s\n", constant);
+        }
+
+        /* Identify operators */
+        else if (isOperator(input[i]))
+        {
+            char op[3] = {input[i], '\0', '\0'};
+
+            /* Check two-character operators */
+            if ((input[i] == '=' && input[i + 1] == '=') ||
+                (input[i] == '!' && input[i + 1] == '=') ||
+                (input[i] == '<' && input[i + 1] == '=') ||
+                (input[i] == '>' && input[i + 1] == '=') ||
+                (input[i] == '+' && input[i + 1] == '+') ||
+                (input[i] == '-' && input[i + 1] == '-') ||
+                (input[i] == '&' && input[i + 1] == '&') ||
+                (input[i] == '|' && input[i + 1] == '|'))
+            {
+                op[1] = input[i + 1];
+                op[2] = '\0';
+                i += 2;
+            }
+            else
+            {
+                i++;
+            }
+
+            printf("OPERATOR\t%s\n", op);
+        }
+
+        /* Ignore other symbols */
+        else
+        {
+            i++;
+        }
+    }
+
+    return 0;
+}
