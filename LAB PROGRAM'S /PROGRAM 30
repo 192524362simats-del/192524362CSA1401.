@@ -1,0 +1,30 @@
+#include <stdio.h>
+#include <ctype.h>
+
+int main()
+{
+    char str[200];
+    int i, count = 0;
+
+    printf("Enter a sentence: ");
+    fgets(str, sizeof(str), stdin);
+
+    for (i = 0; str[i] != '\0'; i++)
+    {
+        if (isalpha(str[i]))
+        {
+            if (tolower(str[i]) != 'a' &&
+                tolower(str[i]) != 'e' &&
+                tolower(str[i]) != 'i' &&
+                tolower(str[i]) != 'o' &&
+                tolower(str[i]) != 'u')
+            {
+                count++;
+            }
+        }
+    }
+
+    printf("Number of consonants = %d\n", count);
+
+    return 0;
+}
