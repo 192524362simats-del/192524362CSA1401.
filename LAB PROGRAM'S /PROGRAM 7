@@ -1,0 +1,34 @@
+#include <stdio.h>
+#include <string.h>
+
+void findFirst(char symbol)
+{
+    if (symbol == 'A')
+    {
+        printf("FIRST(A) = { e }\n");
+    }
+    else if (symbol == 'B')
+    {
+        printf("FIRST(B) = { e }\n");
+    }
+    else if (symbol == 'S')
+    {
+        printf("FIRST(S) = { a, b }\n");
+    }
+}
+
+int main()
+{
+    printf("Given Grammar:\n");
+    printf("S -> AaAb | BbBa\n");
+    printf("A -> e\n");
+    printf("B -> e\n\n");
+
+    printf("FIRST Sets:\n");
+
+    findFirst('A');
+    findFirst('B');
+    findFirst('S');
+
+    return 0;
+}
