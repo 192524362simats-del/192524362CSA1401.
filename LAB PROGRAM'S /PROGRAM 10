@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <string.h>
+
+int main()
+{
+    char productions[3][50] = {
+        "iEtS",
+        "iEtSeS",
+        "a"
+    };
+
+    int n = 3;
+    int i, j;
+    char prefix[50];
+    int prefixLength = 0;
+
+    /* Find common prefix between first two productions */
+    for (i = 0; productions[0][i] != '\0' &&
+                productions[1][i] != '\0'; i++)
+    {
+        if (productions[0][i] == productions[1][i])
+            prefix[prefixLength++] = productions[0][i];
+        else
+            break;
+    }
+
+    prefix[prefixLength] = '\0';
+
+    printf("Original Grammar:\n");
+    printf("S -> iEtS | iEtSeS | a\n");
+    printf("E -> b\n");
+
+    printf("\nAfter Left Factoring:\n");
+
+    if (prefixLength > 0)
+    {
+        printf("S -> %sS' | a\n", prefix);
+        printf("S' -> ");
+
+        /* Print remaining part of first production */
+        if (strlen(productions[0]) > prefixLength)
+            printf("%s", productions[0] + prefixLength);
+        else
+            printf("epsilon");
+
+        printf(" | ");
+
+        /* Print remaining part of second production */
+        if (strlen(productions[1]) > prefixLength)
+            printf("%s", productions[1] + prefixLength);
+        else
+            printf("epsilon");
+
+        printf("\nE -> b\n");
+    }
+    else
+    {
+        printf("No left factoring required.\n");
+    }
+
+    return 0;
+}
