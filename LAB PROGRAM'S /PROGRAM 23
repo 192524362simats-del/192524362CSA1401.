@@ -1,0 +1,33 @@
+%{
+#include <stdio.h>
+int line_no = 1;
+%}
+
+%%
+
+^.*\n    {
+            printf("%d\t%s", line_no++, yytext);
+          }
+
+%%
+
+int main()
+{
+    yyin = fopen("sample.c", "r");
+
+    if (yyin == NULL)
+    {
+        printf("Cannot open sample.c\n");
+        return 1;
+    }
+
+    yylex();
+
+    fclose(yyin);
+    return 0;
+}
+
+int yywrap()
+{
+    return 1;
+}
