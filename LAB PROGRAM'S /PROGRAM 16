@@ -1,0 +1,55 @@
+#include <stdio.h>
+#include <string.h>
+
+void generateCode(char *statement)
+{
+    char op1[20], op2[20], result[20], op;
+
+    if (sscanf(statement, "%s = %s %c %s",
+               result, op1, &op, op2) == 4)
+    {
+        printf("MOV R0, %s\n", op1);
+
+        switch (op)
+        {
+            case '+':
+                printf("ADD R0, %s\n", op2);
+                break;
+
+            case '-':
+                printf("SUB R0, %s\n", op2);
+                break;
+
+            case '*':
+                printf("MUL R0, %s\n", op2);
+                break;
+
+            case '/':
+                printf("DIV R0, %s\n", op2);
+                break;
+
+            default:
+                printf("Invalid operator\n");
+                return;
+        }
+
+        printf("MOV %s, R0\n", result);
+    }
+    else
+    {
+        printf("Invalid intermediate code\n");
+    }
+}
+
+int main()
+{
+    char statement[100];
+
+    printf("Enter three-address code: ");
+    fgets(statement, sizeof(statement), stdin);
+
+    printf("\nGenerated Target Code:\n");
+    generateCode(statement);
+
+    return 0;
+}
