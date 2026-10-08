@@ -1,0 +1,128 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX 20
+
+char productions[MAX][MAX];
+char trailing[MAX][MAX];
+int n;
+int count[MAX];
+
+int isNonTerminal(char c)
+{
+    return (c >= 'A' && c <= 'Z');
+}
+
+int exists(int pos, char c)
+{
+    for (int i = 0; i < count[pos]; i++)
+    {
+        if (trailing[pos][i] == c)
+            return 1;
+    }
+    return 0;
+}
+
+void addTrailing(int pos, char c)
+{
+    if (!exists(pos, c))
+    {
+        trailing[pos][count[pos]] = c;
+        count[pos]++;
+    }
+}
+
+int getPosition(char c)
+{
+    for (int i = 0; i < n; i++)
+    {
+        if (productions[i][0] == c)
+            return i;
+    }
+    return -1;
+}
+
+void findTrailing(int pos)
+{
+    char lhs = productions[pos][0];
+
+    for (int i = 0; i < n; i++)
+    {
+        if (productions[i][0] != lhs)
+            continue;
+
+        char *rhs = strchr(productions[i], '=');
+        rhs++;
+
+        int len = strlen(rhs);
+
+        if (len == 0)
+            continue;
+
+        /* If last symbol is a terminal */
+        if (!isNonTerminal(rhs[len - 1]))
+        {
+            addTrailing(pos, rhs[len - 1]);
+        }
+
+        /* If last symbol is a non-terminal */
+        if (isNonTerminal(rhs[len - 1]))
+        {
+            int p = getPosition(rhs[len - 1]);
+
+            if (p != -1 && p != pos)
+            {
+                findTrailing(p);
+
+                for (int j = 0; j < count[p]; j++)
+                    addTrailing(pos, trailing[p][j]);
+            }
+
+            /* Terminal immediately before last non-terminal */
+            if (len >= 2 && !isNonTerminal(rhs[len - 2]))
+            {
+                addTrailing(pos, rhs[len - 2]);
+            }
+        }
+    }
+}
+
+int main()
+{
+    printf("Enter number of productions: ");
+    scanf("%d", &n);
+
+    printf("Enter productions:\n");
+    printf("Example: E=E+T\n\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        scanf("%s", productions[i]);
+        count[i] = 0;
+    }
+
+    for (int i = 0; i < n; i++)
+    {
+        findTrailing(i);
+    }
+
+    printf("\nTRAILING sets:\n");
+
+    for (int i = 0; i < n; i++)
+    {
+        printf("TRAILING(%c) = { ", productions[i][0]);
+
+        for (int j = 0; j < count[i]; j++)
+        {
+            printf("%c", trailing[i][j]);
+
+            if (j < count[i] - 1)
+                printf(", ");
+        }
+
+        printf(" }\n");
+    }
+
+    return 0;
+}
