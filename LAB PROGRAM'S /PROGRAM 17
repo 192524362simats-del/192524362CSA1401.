@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX 20
+
+char leading[3][MAX];
+int count[3] = {0};
+
+int getIndex(char ch)
+{
+    if (ch == 'E')
+        return 0;
+    if (ch == 'T')
+        return 1;
+    if (ch == 'F')
+        return 2;
+    return -1;
+}
+
+void addLeading(int index, char symbol)
+{
+    int i;
+
+    for (i = 0; i < count[index]; i++)
+    {
+        if (leading[index][i] == symbol)
+            return;
+    }
+
+    leading[index][count[index]++] = symbol;
+}
+
+void computeLeading()
+{
+    /*
+        E -> E + T | T
+        T -> T * F | F
+        F -> ( E ) | id
+    */
+
+    // F -> ( E )
+    addLeading(2, '(');
+
+    // F -> id
+    addLeading(2, 'i');
+
+    // E -> E + T
+    addLeading(0, '+');
+
+    // E -> T
+    // Leading(E) gets Leading(T)
+
+    // T -> T * F
+    addLeading(1, '*');
+
+    // T -> F
+    // Leading(T) gets Leading(F)
+
+    // Copy Leading(F) to Leading(T)
+    addLeading(1, '(');
+    addLeading(1, 'i');
+
+    // Copy Leading(T) to Leading(E)
+    addLeading(0, '*');
+    addLeading(0, '(');
+    addLeading(0, 'i');
+}
+
+void display()
+{
+    int i;
+
+    printf("\nLEADING sets:\n");
+
+    printf("LEADING(E) = { ");
+    for (i = 0; i < count[0]; i++)
+    {
+        if (leading[0][i] == 'i')
+            printf("id ");
+        else
+            printf("%c ", leading[0][i]);
+    }
+    printf("}\n");
+
+    printf("LEADING(T) = { ");
+    for (i = 0; i < count[1]; i++)
+    {
+        if (leading[1][i] == 'i')
+            printf("id ");
+        else
+            printf("%c ", leading[1][i]);
+    }
+    printf("}\n");
+
+    printf("LEADING(F) = { ");
+    for (i = 0; i < count[2]; i++)
+    {
+        if (leading[2][i] == 'i')
+            printf("id ");
+        else
+            printf("%c ", leading[2][i]);
+    }
+    printf("}\n");
+}
+
+int main()
+{
+    printf("Grammar:\n");
+    printf("E -> E + T | T\n");
+    printf("T -> T * F | F\n");
+    printf("F -> ( E ) | id\n");
+
+    computeLeading();
+    display();
+
+    return 0;
+}
