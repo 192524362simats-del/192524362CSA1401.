@@ -1,0 +1,29 @@
+%%writefile word_frequency.l
+%{
+#include <stdio.h>
+#include <string.h>
+
+int max = 0;
+%}
+
+%%
+[a-zA-Z]+    {
+                 if (yyleng > max)
+                     max = yyleng;
+             }
+.|
+         ;
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter a sentence:\n");
+    yylex();
+    printf("Length of the longest word = %d\n", max);
+    return 0;
+}
