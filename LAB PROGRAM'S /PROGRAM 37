@@ -1,0 +1,40 @@
+%{
+#include <stdio.h>
+#include <string.h>
+
+int count = 0;
+char word[100];
+%}
+
+%%
+[a-zA-Z0-9]+    {
+                    if (strcmp(yytext, word) == 0)
+                        count++;
+                }
+[ \t\n]+        ;
+.               ;
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    char sentence[500];
+
+    printf("Enter a sentence: ");
+    fgets(sentence, sizeof(sentence), stdin);
+
+    printf("Enter the word to search: ");
+    scanf("%99s", word);
+
+    YY_BUFFER_STATE buffer = yy_scan_string(sentence);
+    yylex();
+    yy_delete_buffer(buffer);
+
+    printf("Frequency of '%s' = %d\n", word, count);
+
+    return 0;
+}
