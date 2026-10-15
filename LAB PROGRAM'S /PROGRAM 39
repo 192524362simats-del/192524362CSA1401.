@@ -1,0 +1,45 @@
+%%writefile word_frequency.l
+%{
+#include <stdio.h>
+#include <string.h>
+
+char oldword[100], newword[100];
+%}
+
+%%
+[a-zA-Z0-9_]+ {
+    if (strcmp(yytext, oldword) == 0)
+        printf("%s", newword);
+    else
+        printf("%s", yytext);
+}
+\n      { printf("\n"); }
+.       { printf("%s", yytext); }
+%%
+
+int yywrap()
+{
+    return 1;
+}
+
+int main()
+{
+    printf("Enter the word to replace: ");
+    scanf("%99s", oldword);
+
+    printf("Enter the new word: ");
+    scanf("%99s", newword);
+
+    yyin = fopen("input.txt", "r");
+
+    if (yyin == NULL)
+    {
+        printf("Error opening file!\n");
+        return 1;
+    }
+
+    yylex();
+    fclose(yyin);
+
+    return 0;
+}
